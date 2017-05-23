@@ -106,6 +106,12 @@
     <Filter Include="Irrlicht\video\OpenGL Context">
       <UniqueIdentifier>{2512a519-e6c0-4b48-aae4-ded2d2500b95}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include\raytracing">
+      <UniqueIdentifier>{55e13866-b072-49e5-ba79-3f36a6da8be5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Irrlicht\raytracing">
+      <UniqueIdentifier>{d72c47a9-7858-4780-bea4-ecbb98839ebc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\IEventReceiver.h">
@@ -1338,6 +1344,9 @@
     </ClInclude>
     <ClInclude Include="CWGLManager.h">
       <Filter>Irrlicht\video\OpenGL Context</Filter>
+    </ClInclude>
+    <ClInclude Include="IRay.h">
+      <Filter>include\raytracing</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

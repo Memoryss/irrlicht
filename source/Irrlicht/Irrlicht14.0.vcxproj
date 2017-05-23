@@ -1035,6 +1035,7 @@
     <ClInclude Include="COpenGLSLMaterialRenderer.h" />
     <ClInclude Include="CSceneManager.h" />
     <ClInclude Include="CWGLManager.h" />
+    <ClInclude Include="IRay.h" />
     <ClInclude Include="Octree.h" />
     <ClInclude Include="CSMFMeshFileLoader.h" />
     <ClInclude Include="C3DSMeshFileLoader.h" />
