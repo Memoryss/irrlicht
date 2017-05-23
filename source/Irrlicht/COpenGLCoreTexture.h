@@ -62,10 +62,12 @@ public:
 		AutoGenerateMipMaps = Driver->queryFeature(EVDF_MIP_MAP_AUTO_UPDATE);
 		KeepImage = Driver->getTextureCreationFlag(ETCF_ALLOW_MEMORY_COPY);
 
+		//初始化 纹理相关信息(格式，pitch,size等)
 		getImageValues(image[0]);
 
 		const core::array<IImage*>* tmpImage = &image;
 
+		//不满足条件 重新分配内存
 		if (KeepImage || OriginalSize != Size || OriginalColorFormat != ColorFormat)
 		{
 			Image.set_used(image.size());
@@ -398,6 +400,7 @@ public:
 	}
 
 protected:
+	//讲Image的格式  压缩一下  获取最佳性能
 	ECOLOR_FORMAT getBestColorFormat(ECOLOR_FORMAT format)
 	{
 		ECOLOR_FORMAT destFormat = (!IImage::isCompressedFormat(format)) ? ECF_A8R8G8B8 : format;
@@ -447,8 +450,10 @@ protected:
 		OriginalColorFormat = image->getColorFormat();
 		ColorFormat = getBestColorFormat(OriginalColorFormat);
 
+		//根据最佳colorformat初始化 opengl其他参数
 		Driver->getColorFormatParameters(ColorFormat, InternalFormat, PixelFormat, PixelType, &Converter);
 
+		//如果是压缩的格式，则没有mipmaps
 		if (IImage::isCompressedFormat(image->getColorFormat()))
 		{
 			KeepImage = false;
@@ -466,6 +471,7 @@ protected:
 
 		const f32 ratio = (f32)Size.Width / (f32)Size.Height;
 
+		//根据设备对纹理大小进行缩放
 		if ((Size.Width > Driver->MaxTextureSize) && (ratio >= 1.f))
 		{
 			Size.Width = Driver->MaxTextureSize;
@@ -479,11 +485,13 @@ protected:
 
 		bool needSquare = (!Driver->queryFeature(EVDF_TEXTURE_NSQUARE) || Type == ETT_CUBEMAP);
 
+		//讲尺寸改为2的整数倍 提高性能
 		Size = Size.getOptimalSize(!Driver->queryFeature(EVDF_TEXTURE_NPOT), needSquare, true, Driver->MaxTextureSize);
 
 		Pitch = Size.Width * IImage::getBitsPerPixelFromFormat(ColorFormat) / 8;
 	}
 
+	//opengl加载纹理数据
 	void uploadTexture(bool initTexture, u32 layer, u32 level, void* data)
 	{
 		if (!data)
@@ -554,8 +562,8 @@ protected:
 
 	TOpenGLDriver* Driver;
 
-	GLenum TextureType;
-	GLuint TextureName;
+	GLenum TextureType;  //opengl纹理类型
+	GLuint TextureName; 
 	GLint InternalFormat;
 	GLenum PixelFormat;
 	GLenum PixelType;

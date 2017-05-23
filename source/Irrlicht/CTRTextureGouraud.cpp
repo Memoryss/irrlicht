@@ -171,6 +171,7 @@ void CTRTextureGouraud::drawIndexedTriangleList(S2DVertex* vertices, s32 vertexC
 		TriangleRect.UpperLeftCorner.Y = v1->Pos.Y;
 		TriangleRect.LowerRightCorner.Y = v3->Pos.Y;
 
+		//фад╩╡ц╪Т
 		if (!TriangleRect.isRectCollided(ViewPortRect))
 			continue;
 

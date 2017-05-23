@@ -142,7 +142,7 @@ namespace video
 		void drawClippedIndexedTriangleListT(const VERTEXTYPE* vertices,
 			s32 vertexCount, const u16* indexList, s32 triangleCount);
 
-		video::CImage* BackBuffer;
+		video::CImage* BackBuffer; //Ä£Äâºóbuffer
 		video::IImagePresenter* Presenter;
 		void* WindowId;
 		core::rect<s32>* SceneSourceRect;

@@ -23,6 +23,7 @@ namespace irr
 namespace video
 {
 
+//cppµÄÇ°ÖÃÉùÃ÷
 //! creates a loader which is able to load windows bitmaps
 IImageLoader* createImageLoaderBMP();
 
