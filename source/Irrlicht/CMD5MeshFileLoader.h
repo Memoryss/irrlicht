@@ -11,15 +11,19 @@ namespace irr
 		class IVideoDriver;
 	}
 	
+	namespace io
+	{
+		class IReadFile;
+	}
 
 namespace scene
 {
 	class CSkinnedMesh;
 
-	struct MD5MeshHeader
+	struct MD5Header
 	{
 		int version;
-		core::string command
+		core::stringc commondLineStr;
 	};
 
 	class CMD5MeshFileLoader : public IMeshLoader
@@ -33,12 +37,29 @@ namespace scene
 		virtual IAnimatedMesh* createMesh(io::IReadFile* file) override;
 
 	protected:
-		void loadFile(io::IReadFile file, CSkinnedMesh *mesh);
+		bool loadFile(io::IReadFile *file);
+
+		void loadMeshFile(const c8 *bufBegin, const c8 *bufEnd);
+
+		void loadAnimFile(const c8 *bufBegin, const c8 *bufEnd);
+
+		void parseJoints(const c8 *bufBegin, const c8 *bufEnd);
+
+		void parseMesh(const c8 *bufBegin, const c8 *bufEnd);
+
+		const c8* _parseHeader(const c8 *bufBegin, const c8 *bufEnd, bool isMesh);
+		void _parseShader(const c8 *bufBegin, const c8 *bufEnd);
+		void _parseVerts(const c8 *bufBegin, const c8 *bufEnd);
+		void _parseTris(const c8 *bufBegin, const c8 *bufEnd);
+		void _parseWeights(const c8 *bufBegin, const c8 *bufEnd);
 
 	private:
 		CSkinnedMesh *AnimatedMesh;
 
 		video::IVideoDriver *Driver;
+
+		MD5Header m_meshHeader;
+		MD5Header m_animHeader;
 	};
 }
 }
