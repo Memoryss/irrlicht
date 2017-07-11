@@ -1348,6 +1348,9 @@
     <ClInclude Include="IRay.h">
       <Filter>include\raytracing</Filter>
     </ClInclude>
+    <ClInclude Include="CMD5MeshFileLoader.h">
+      <Filter>Irrlicht\scene\loaders</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\changes.txt">
@@ -2284,6 +2287,9 @@
     </ClCompile>
     <ClCompile Include="CWGLManager.cpp">
       <Filter>Irrlicht\video\OpenGL Context</Filter>
+    </ClCompile>
+    <ClCompile Include="CMD5MeshFileLoader.cpp">
+      <Filter>Irrlicht\scene\loaders</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

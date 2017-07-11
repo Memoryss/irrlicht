@@ -1016,6 +1016,7 @@
     <ClInclude Include="CD3D9RenderTarget.h" />
     <ClInclude Include="CDefaultSceneNodeAnimatorFactory.h" />
     <ClInclude Include="CDefaultSceneNodeFactory.h" />
+    <ClInclude Include="CMD5MeshFileLoader.h" />
     <ClInclude Include="CGeometryCreator.h" />
     <ClInclude Include="CGLXManager.h" />
     <ClInclude Include="CMeshCache.h" />
@@ -1270,6 +1271,7 @@
     <ClCompile Include="CD3D9RenderTarget.cpp" />
     <ClCompile Include="CDefaultSceneNodeAnimatorFactory.cpp" />
     <ClCompile Include="CDefaultSceneNodeFactory.cpp" />
+    <ClCompile Include="CMD5MeshFileLoader.cpp" />
     <ClCompile Include="CGeometryCreator.cpp" />
     <ClCompile Include="CGLXManager.cpp" />
     <ClCompile Include="CMeshCache.cpp" />
