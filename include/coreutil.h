@@ -199,10 +199,94 @@ static inline io::path mergeFilename(const io::path& path, const io::path& filen
 #undef isdigit
 #undef isspace
 #undef isupper
+#undef skipSpace
+#undef isLineEnd
+#undef skipLine
 inline s32 isdigit(s32 c) { return c >= '0' && c <= '9'; }
 inline s32 isspace(s32 c) { return c == ' ' || c == '\f' || c == '\n' || c == '\r' || c == '\t' || c == '\v'; }
 inline s32 isupper(s32 c) { return c >= 'A' && c <= 'Z'; }
+inline bool isSpace(c8 c) { return c == ' ' || c == '\t'; }
+inline bool isLineEnd(const c8 c) { return c == '\n' || c == '\r' || c == '\0' || c == '\f'; }
+inline bool skipSpace(const c8 **buf) 
+{
+	auto p = *buf;
+	while (*p == ' ' || *p == '\t')
+	{
+		++p;
+	}
 
+	*buf = p;
+
+	return !isLineEnd(**buf);
+}
+inline bool skipLine(const c8 **buf)
+{
+	auto p = *buf;
+	while (*p != '\r' && *p != '\n' && *p != '\0')
+	{
+		++p;
+	}
+
+	while (*p == '\r' || *p == '\n')
+	{
+		++p;
+	}
+
+	*buf = p;
+	return **buf != '\0';
+}
+inline bool isSpaceOrNewLine(c8 c) { return isSpace(c) || isLineEnd(c); }
+//match
+inline bool tokenMatch(const c8 ** buf, const c8 *token, unsigned int len)
+{
+	if (!::strncmp(*buf, token, len) && isSpaceOrNewLine((*buf)[len]))
+	{
+		if ((*buf)[len] != '\0')
+		{
+			(*buf) += len + 1;
+		}
+		else
+		{
+			(*buf) += len;
+		}
+
+		return true;
+	}
+
+	return false;
+}
+inline bool toToken(c8 * &buf, const c8 *token) 
+{
+	c8 *p = ::strstr(buf, token);
+	if (!p)
+	{
+		return false;
+	}
+
+	buf = p + strlen(token);
+	return true;
+}
+
+//char to int
+/*
+inline unsigned int str_to_ui_10(const c8 **buf)
+{
+	unsigned int value = 0;
+	auto p = *buf;
+	while (true)
+	{
+		if (*p > '9' || *p < '0')
+		{
+			break;
+		}
+
+		value = (value * 10) + (*p - '0');
+		++p;
+	}
+
+	*buf = p;
+	return value;
+}*/
 
 } // end namespace core
 } // end namespace irr

@@ -20,9 +20,30 @@ namespace scene
 {
 	class CSkinnedMesh;
 
+	struct Element
+	{
+		c8 * szStart;
+		unsigned int iLineNumber;
+	};
+
+	typedef core::array<Element> ElementList;
+
+	struct Section
+	{
+		unsigned int iLineNumber;
+
+		ElementList mElements;
+
+		core::stringc mName;
+
+		core::stringc mGlobalValue;
+	};
+
+	typedef core::array<Section> SectionList;
+
 	struct MD5Header
 	{
-		int version;
+		unsigned int version;
 		core::stringc commondLineStr;
 	};
 
@@ -39,27 +60,45 @@ namespace scene
 	protected:
 		bool loadFile(io::IReadFile *file);
 
-		void loadMeshFile(const c8 *bufBegin, const c8 *bufEnd);
+		void loadMeshFile();
 
-		void loadAnimFile(const c8 *bufBegin, const c8 *bufEnd);
+		void loadAnimFile();
 
-		void parseJoints(const c8 *bufBegin, const c8 *bufEnd);
+		void parseHeader();
 
-		void parseMesh(const c8 *bufBegin, const c8 *bufEnd);
+		bool parseSection(Section &sec);
 
-		const c8* _parseHeader(const c8 *bufBegin, const c8 *bufEnd, bool isMesh);
+		void parseMesh();
+
+		void parseMesh(const c8 *buf);
+
 		void _parseShader(const c8 *bufBegin, const c8 *bufEnd);
 		void _parseVerts(const c8 *bufBegin, const c8 *bufEnd);
 		void _parseTris(const c8 *bufBegin, const c8 *bufEnd);
 		void _parseWeights(const c8 *bufBegin, const c8 *bufEnd);
+
+	protected:
+		bool skipSpacesAndLineEnd();
+		bool skipLine();
+		bool parseString(const c8 ** buf, int lineNumber, core::stringc &name);
+		bool parseVec(const c8 **buf, int lineNumber, core::vector3df &vec);
+
+		void convertVecToQuat(core::vector3df &vec, core::quaternion &quat);
+
+	public:
+		SectionList	m_sections;
 
 	private:
 		CSkinnedMesh *AnimatedMesh;
 
 		video::IVideoDriver *Driver;
 
-		MD5Header m_meshHeader;
-		MD5Header m_animHeader;
+		MD5Header m_header;
+
+		c8 *m_buffer = NULL;
+		int m_fileSize = 0;
+		int m_lineNumber = 0;
+		core::stringc m_fileName;
 	};
 }
 }
