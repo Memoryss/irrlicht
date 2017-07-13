@@ -80,8 +80,9 @@ namespace scene
 
 	bool CMD5MeshFileLoader::loadMeshFile(io::IReadFile *file) {
 		
-		if ()
+		if (!loadFileImp(file))
 		{
+			return false;
 		}
 
 		parseMesh();
@@ -102,7 +103,12 @@ namespace scene
 
 	bool CMD5MeshFileLoader::loadAnimFile(io::IReadFile *file)
 	{
+		if (!loadFileImp(file))
+		{
+			return false;
+		}
 
+		parseAnim();
 	}
 
 
@@ -446,10 +452,21 @@ namespace scene
 		}
 	}
 
-
 	void CMD5MeshFileLoader::parseAnim()
 	{
+		os::Printer::log("parse md5 anim file begin. name:", m_fileName.c_str(), ELL_DEBUG);
 
+		for (u32 i = 0; i < m_sections.size(); ++i)
+		{
+			auto &sec = m_sections[i];
+			if (sec.mName == "hierarchy")
+			{
+				for (u32 j = 0; j < m_sections.size(); ++i)
+				{
+					m_animatedBones.push_back(AnimBone());
+				}
+			}
+		}
 	}
 
 	bool CMD5MeshFileLoader::skipLine()

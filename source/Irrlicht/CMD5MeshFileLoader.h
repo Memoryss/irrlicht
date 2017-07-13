@@ -118,6 +118,37 @@ namespace scene
 
 	typedef core::array<MD5Bone> BoneList;
 
+	struct AnimBone : public MD5BaseJoint
+	{
+		u32 iFlags;
+		u32 iFirstKeyIndex;
+	};
+
+	typedef core::array<AnimBone> AnimBoneList;
+
+	struct BaseFrame
+	{
+		core::vector3df vPositionXYZ;
+		core::vector3df vRotationQuat;
+	};
+
+	typedef core::array<BaseFrame> BaseFrameList;
+
+	struct CameraAnimFrame : public BaseFrame
+	{
+		float fFOV;
+	};
+
+	typedef core::array<CameraAnimFrame> CameraFrameList;
+
+	struct Frame
+	{
+		u32 iIndex;
+		core::array<float> mValues;
+	};
+
+	typedef core::array<Frame> FrameList;
+
 	class CMD5MeshFileLoader : public IMeshLoader
 	{
 	public:
@@ -167,8 +198,16 @@ namespace scene
 		int m_lineNumber = 0;
 		core::stringc m_fileName;
 
+		//mesh
 		MeshList m_meshs;
 		BoneList m_joints;
+
+		//anim
+		float fFrameRate;
+		AnimBoneList m_animatedBones;
+		BaseFrameList m_baseFrames;
+		FrameList m_frames;
+		u32 m_numAnimatedComponents;
 	};
 }
 }
