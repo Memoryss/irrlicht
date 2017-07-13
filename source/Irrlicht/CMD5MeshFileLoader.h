@@ -3,6 +3,10 @@
 
 #include "IMeshLoader.h"
 #include "irrString.h"
+#include "irrArray.h"
+#include "vector2d.h"
+#include "vector3d.h"
+#include "quaternion.h"
 
 namespace irr
 {
@@ -14,10 +18,13 @@ namespace irr
 	namespace io
 	{
 		class IReadFile;
+		class IFileSystem;
 	}
 
 namespace scene
 {
+	class ISceneManager;
+	
 	class CSkinnedMesh;
 
 	struct Element
@@ -41,16 +48,80 @@ namespace scene
 
 	typedef core::array<Section> SectionList;
 
+	struct MD5Vetex
+	{
+		core::vector2df mUV;
+		unsigned int mFirstWeight = 0;
+		unsigned int mNumWeights = 0;
+	};
+
+	typedef core::array<MD5Vetex> VertexList;
+
+	struct MD5Weight
+	{
+		unsigned int mBone = 0;
+
+		float mWeight = 0.0f;
+
+		core::vector3df mOffsetPosition;
+
+		unsigned int mVertexID = 0;
+	};
+
+	typedef core::array<MD5Weight> WeightList;
+
+	struct MD5Face
+	{
+		unsigned int mNumIndices = 0;
+
+		core::vector3di mIndices;
+	};
+
+	typedef core::array<MD5Face> FaceList;
+
 	struct MD5Header
 	{
 		unsigned int version;
 		core::stringc commondLineStr;
 	};
 
+	struct MD5Mesh
+	{
+		WeightList mWeights;
+		VertexList mVertices;
+		FaceList mFaces;
+
+		core::stringc mShader;
+	};
+
+	typedef core::array<MD5Mesh> MeshList;
+
+	struct MD5BaseJoint
+	{
+		core::stringc mName;
+
+		int mParentIndex;
+	};
+
+	struct MD5Bone : public MD5BaseJoint
+	{
+		core::vector3df mPositionXYZ;
+
+		core::vector3df mRotationQuat;
+		core::quaternion mRotationQuatConverted;
+
+		//core::matrix4 mTransform;
+		//core::matrix4 mInvTransform;
+
+		//unsigned int mMap;
+	};
+
+	typedef core::array<MD5Bone> BoneList;
+
 	class CMD5MeshFileLoader : public IMeshLoader
 	{
 	public:
-		CMD5MeshFileLoader(video::IVideoDriver *dirver);
+		CMD5MeshFileLoader(scene::ISceneManager* smgr, io::IFileSystem* fs);
 
 		virtual bool isALoadableFileExtension(const io::path& filename) const override;
 
@@ -60,22 +131,13 @@ namespace scene
 	protected:
 		bool loadFile(io::IReadFile *file);
 
-		void loadMeshFile();
-
-		void loadAnimFile();
-
 		void parseHeader();
 
 		bool parseSection(Section &sec);
 
 		void parseMesh();
 
-		void parseMesh(const c8 *buf);
-
-		void _parseShader(const c8 *bufBegin, const c8 *bufEnd);
-		void _parseVerts(const c8 *bufBegin, const c8 *bufEnd);
-		void _parseTris(const c8 *bufBegin, const c8 *bufEnd);
-		void _parseWeights(const c8 *bufBegin, const c8 *bufEnd);
+		void parseAnim();
 
 	protected:
 		bool skipSpacesAndLineEnd();
@@ -83,7 +145,7 @@ namespace scene
 		bool parseString(const c8 ** buf, int lineNumber, core::stringc &name);
 		bool parseVec(const c8 **buf, int lineNumber, core::vector3df &vec);
 
-		void convertVecToQuat(core::vector3df &vec, core::quaternion &quat);
+		void convertVecToQuat(const core::vector3df &vec, core::quaternion &quat);
 
 	public:
 		SectionList	m_sections;
@@ -91,7 +153,8 @@ namespace scene
 	private:
 		CSkinnedMesh *AnimatedMesh;
 
-		video::IVideoDriver *Driver;
+		ISceneManager* SceneManager;
+		io::IFileSystem* FileSystem;
 
 		MD5Header m_header;
 
@@ -99,6 +162,9 @@ namespace scene
 		int m_fileSize = 0;
 		int m_lineNumber = 0;
 		core::stringc m_fileName;
+
+		MeshList m_meshs;
+		BoneList m_joints;
 	};
 }
 }

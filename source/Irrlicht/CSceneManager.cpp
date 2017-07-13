@@ -110,6 +110,10 @@
 #include "CSMFMeshFileLoader.h"
 #endif
 
+#ifdef _IRR_COMPILE_WITH_MD5_LOADER_
+#include "CMD5MeshFileLoader.h"
+#endif
+
 #ifdef _IRR_COMPILE_WITH_IRR_SCENE_LOADER_
 #include "CSceneLoaderIrr.h"
 #endif
@@ -301,6 +305,9 @@ CSceneManager::CSceneManager(video::IVideoDriver* driver, io::IFileSystem* fs,
 	#endif
 	#ifdef _IRR_COMPILE_WITH_B3D_LOADER_
 	MeshLoaderList.push_back(new CB3DMeshFileLoader(this));
+	#endif
+	#ifdef _IRR_COMPILE_WITH_MD5_LOADER_
+	MeshLoaderList.push_back(new CMD5MeshFileLoader(this, FileSystem));
 	#endif
 
 	// scene loaders
