@@ -42,15 +42,49 @@ namespace scene
 
 		AnimatedMesh = new CSkinnedMesh();
 
-		if (loadFile(file)) 
-		{
-			AnimatedMesh->finalize();
-		}
-		else
+		if (!loadMeshFile(file)) 
 		{
 			AnimatedMesh->drop();
 			AnimatedMesh = 0;
+			return NULL;
 		}
+
+		io::path path;
+		io::path fname;
+		io::path ext;
+		core::splitFilename(file->getFileName(), &path, &fname, &ext);
+
+		io::path animFile = path + fname + ".md5anim";
+		if (FileSystem->existFile(animFile))
+		{
+			io::IReadFile* file = FileSystem->createAndOpenFile(animFile);
+			if (!file)
+			{
+				os::Printer::log("Could not load mesh, because file could not be opened: ", filename, ELL_ERROR);
+				return false;
+			}
+			else
+			{
+				if (!loadAnimFile(file))
+				{
+					AnimatedMesh->drop();
+					AnimatedMesh = 0;
+					return NULL;
+				}
+			}
+		}
+
+		AnimatedMesh->finalize();
+		return AnimatedMesh;
+	}
+
+	bool CMD5MeshFileLoader::loadMeshFile(io::IReadFile *file) {
+		
+		if ()
+		{
+		}
+
+		parseMesh();
 
 		if (m_buffer)
 		{
@@ -62,10 +96,18 @@ namespace scene
 		m_sections.clear();
 		m_joints.clear();
 
-		return AnimatedMesh;
+		return true;
 	}
 
-	bool CMD5MeshFileLoader::loadFile(io::IReadFile *file) {
+
+	bool CMD5MeshFileLoader::loadAnimFile(io::IReadFile *file)
+	{
+
+	}
+
+
+	bool CMD5MeshFileLoader::loadFileImp(io::IReadFile *file)
+	{
 		int fileSize = file->getSize();
 		if (fileSize <= 0)
 		{
@@ -96,19 +138,6 @@ namespace scene
 		}
 
 		os::Printer::log("parse md5 base file end. name:", file->getFileName().c_str(), ELL_DEBUG);
-
-		parseMesh();
-
-		io::path path;
-		io::path fname;
-		io::path ext;
-		core::splitFilename(file->getFileName(), &path, &fname, &ext);
-
-		io::path animFile = path + fname + ".md5anim";
-		if (FileSystem->existFile(animFile))
-		{
-			parseAnim();
-		}
 
 		return true;
 	}

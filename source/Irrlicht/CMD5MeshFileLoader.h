@@ -129,7 +129,11 @@ namespace scene
 		virtual IAnimatedMesh* createMesh(io::IReadFile* file) override;
 
 	protected:
-		bool loadFile(io::IReadFile *file);
+		bool loadMeshFile(io::IReadFile *file);
+
+		bool loadAnimFile(io::IReadFile *file);
+
+		bool loadFileImp(io::IReadFile *file);
 
 		void parseHeader();
 
