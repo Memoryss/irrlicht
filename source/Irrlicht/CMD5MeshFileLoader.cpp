@@ -456,17 +456,183 @@ namespace scene
 	{
 		os::Printer::log("parse md5 anim file begin. name:", m_fileName.c_str(), ELL_DEBUG);
 
+		m_frameRate = 24.0f;
+		m_numAnimatedComponents = UINT_MAX;
+
 		for (u32 i = 0; i < m_sections.size(); ++i)
 		{
 			auto &sec = m_sections[i];
 			if (sec.mName == "hierarchy")
 			{
-				for (u32 j = 0; j < m_sections.size(); ++i)
+				for (u32 j = 0; j < sec.mElements.size(); ++j)
 				{
 					m_animatedBones.push_back(AnimBone());
+					auto &bone = m_animatedBones.getLast();
+					auto &ele = sec.mElements[j];
+
+					const c8 *sz = ele.szStart;
+					parseString((const c8 **)sz, ele.iLineNumber, bone.mName);
+
+					core::skipSpace((const c8 **)sz);
+					bone.mParentIndex = core::strtoul10(sz, &sz);
+
+					core::skipSpace((const c8 **)sz);
+					if (63 < (bone.iFlags = core::strtoul10(sz, &sz)))
+					{
+						os::Printer::log("Invalid flag combination in hierarchy section", core::stringc(ele.iLineNumber), ELL_WARNING);
+					}
+					
+					core::skipSpace((const c8 **)sz);
+					bone.iFirstKeyIndex = core::strtoul10(sz, &sz);
+				}
+			}
+			else if (sec.mName == "baseframe")
+			{
+				for (u32 j = 0; j < sec.mElements.size(); ++j)
+				{
+					auto &ele = sec.mElements[j];
+
+					m_baseFrames.push_back(BaseFrame());
+					auto &frame = m_baseFrames.getLast();
+
+					const c8 * sz = ele.szStart;
+
+					parseVec(&sz, ele.iLineNumber, frame.vPositionXYZ);
+					parseVec(&sz, ele.iLineNumber, frame.vRotationQuat);
+				}
+			}
+			else if (sec.mName == "frame")
+			{
+				if (!sec.mGlobalValue.size())
+				{
+					os::Printer::log("A frame section must have a frame index", core::stringc(sec.iLineNumber), ELL_WARNING);
+					continue;
+				}
+
+				m_frames.push_back(Frame());
+				auto &frame = m_frames.getLast();
+				frame.iIndex = core::strtoul10(sec.mGlobalValue.c_str());
+
+				if (UINT_MAX != m_numAnimatedComponents)
+				{
+					frame.mValues.reallocate(m_numAnimatedComponents);
+				}
+
+				for (u32 j = 0; j < sec.mElements.size(); ++j)
+				{
+					auto &ele = sec.mElements[j];
+					const char *sz = ele.szStart;
+					while (skipSpacesAndLineEnd())
+					{
+						f32 f;
+						sz = core::fast_atof_move(sz, f);
+						frame.mValues.push_back(f);
+					}
+				}
+			}
+			else if (sec.mName == "numFrames")
+			{
+				m_frames.reallocate(core::strtoul10(sec.mGlobalValue.c_str()));
+			}
+			else if (sec.mName == "numJoints")
+			{
+				const unsigned int num = core::strtoul10(sec.mGlobalValue.c_str());
+				m_animatedBones.reallocate(num);
+				if (UINT_MAX == m_numAnimatedComponents)
+				{
+					m_numAnimatedComponents = num * 6;
+				}
+			}
+			else if (sec.mName == "numAnimatedComponents")
+			{
+				//m_animatedBones.reallocate(core::strtoul10(sec.mGlobalValue.c_str());
+				m_numAnimatedComponents = core::strtoul10(sec.mGlobalValue.c_str();
+			}
+			else if (sec.mName == "frameRate")
+			{
+				core::fast_atof_move(sec.mGlobalValue.c_str(), m_frameRate);
+			}
+			//TODO包围盒
+		}
+
+		if (m_animatedBones.empty() || m_frames.empty() || m_baseFrames.size() != m_animatedBones.size())
+		{
+			os::Printer::log("MD5ANIM: No frames or animated bones loaded", m_fileName.c_str(), ELL_ERROR);
+		}
+		else
+		{
+			//设置fps
+			AnimatedMesh->setAnimationSpeed(m_frameRate);
+
+			//读取 关键帧
+			for (u32 i = 0; i < m_frames.size(); ++i)
+			{
+				auto &frame = m_frames[i];
+				if (!frame.mValues.empty() || i == 0) // 确保至少有1帧
+				{
+					auto *baseFrame = &m_baseFrames[0];
+					for (u32 j = 0; j < m_animatedBones.size(); ++j, ++baseFrame)
+					{
+						auto &bone = m_animatedBones[j];
+						if (bone.iFirstKeyIndex >= frame.mValues.size())
+						{
+							if (bone.iFlags != 0)
+							{
+								os::Printer::log("MD5: Keyframe index is out of range", m_fileName.c_str(), ELL_ERROR);
+							}
+							continue;
+						}
+
+						const f32 *fpCur = &(frame.mValues[bone.iFirstKeyIndex]);
+
+						auto *joint = AnimatedMesh->getAllJoints()[j];
+						//pos
+						{
+							auto *posKey = AnimatedMesh->addPositionKey(joint);
+							posKey->frame = f32(frame.iIndex);
+							if (bone.iFlags & 1u)
+								posKey->position.X = *fpCur++;
+							else
+								posKey->position.X = baseFrame->vPositionXYZ.X;
+
+							if (bone.iFlags & 2u)
+								posKey->position.Y = *fpCur++;
+							else
+								posKey->position.Y = baseFrame->vPositionXYZ.Y;
+
+							if (bone.iFlags & 4u)
+								posKey->position.Z = *fpCur++;
+							else
+								posKey->position.Z = baseFrame->vPositionXYZ.Z;
+						}
+
+						//rot
+						{
+							core::vector3df temp;
+							auto *rotKey = AnimatedMesh->addRotationKey(joint);
+							rotKey->frame = f32(frame.iIndex);
+							if (bone.iFlags & 8u)
+								posKey-.X = *fpCur++;
+							else
+								posKey->position.X = baseFrame->vPositionXYZ.X;
+
+							if (bone.iFlags & 2u)
+								posKey->position.Y = *fpCur++;
+							else
+								posKey->position.Y = baseFrame->vPositionXYZ.Y;
+
+							if (bone.iFlags & 4u)
+								posKey->position.Z = *fpCur++;
+							else
+								posKey->position.Z = baseFrame->vPositionXYZ.Z;
+						}
+						
+					}
 				}
 			}
 		}
+
+		os::Printer::log("parse md5 anim file end. name:", m_fileName.c_str(), ELL_DEBUG);
 	}
 
 	bool CMD5MeshFileLoader::skipLine()
@@ -530,11 +696,11 @@ namespace scene
 		quat.Y = vec.Y;
 		quat.Z = vec.Z;
 
-		const float t = 1.0f - (vec.X*vec.X) - (vec.Y*vec.Y) - (vec.Z*vec.Z);
+		const f32 t = 1.0f - (vec.X*vec.X) - (vec.Y*vec.Y) - (vec.Z*vec.Z);
 
 		if (t < 0.0f)
 			quat.W = 0.0f;
-		else quat.W = float(sqrt(t)); 
+		else quat.W = f32(sqrt(t)); 
 
 		quat.W *= -1.f;
 	}

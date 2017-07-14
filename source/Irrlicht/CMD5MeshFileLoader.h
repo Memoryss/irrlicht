@@ -203,7 +203,7 @@ namespace scene
 		BoneList m_joints;
 
 		//anim
-		float fFrameRate;
+		float m_frameRate;
 		AnimBoneList m_animatedBones;
 		BaseFrameList m_baseFrames;
 		FrameList m_frames;
