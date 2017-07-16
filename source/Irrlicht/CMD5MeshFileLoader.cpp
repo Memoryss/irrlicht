@@ -60,7 +60,7 @@ namespace scene
 			io::IReadFile* file = FileSystem->createAndOpenFile(animFile);
 			if (!file)
 			{
-				os::Printer::log("Could not load mesh, because file could not be opened: ", filename, ELL_ERROR);
+				os::Printer::log("Could not load mesh, because file could not be opened: ", m_fileName.c_str(), ELL_ERROR);
 				return false;
 			}
 			else
@@ -109,6 +109,18 @@ namespace scene
 		}
 
 		parseAnim();
+
+		if (m_buffer)
+		{
+			delete m_buffer;
+			m_buffer = 0;
+		}
+
+		m_frames.clear();
+		m_baseFrames.clear();
+		m_animatedBones.clear();
+
+		return true;
 	}
 
 
@@ -546,7 +558,7 @@ namespace scene
 			else if (sec.mName == "numAnimatedComponents")
 			{
 				//m_animatedBones.reallocate(core::strtoul10(sec.mGlobalValue.c_str());
-				m_numAnimatedComponents = core::strtoul10(sec.mGlobalValue.c_str();
+				m_numAnimatedComponents = core::strtoul10(sec.mGlobalValue.c_str());
 			}
 			else if (sec.mName == "frameRate")
 			{
@@ -612,21 +624,22 @@ namespace scene
 							auto *rotKey = AnimatedMesh->addRotationKey(joint);
 							rotKey->frame = f32(frame.iIndex);
 							if (bone.iFlags & 8u)
-								posKey-.X = *fpCur++;
+								temp.X = *fpCur++;
 							else
-								posKey->position.X = baseFrame->vPositionXYZ.X;
+								temp.X = baseFrame->vPositionXYZ.X;
 
-							if (bone.iFlags & 2u)
-								posKey->position.Y = *fpCur++;
+							if (bone.iFlags & 16u)
+								temp.Y = *fpCur++;
 							else
-								posKey->position.Y = baseFrame->vPositionXYZ.Y;
+								temp.Y = baseFrame->vPositionXYZ.Y;
 
 							if (bone.iFlags & 4u)
-								posKey->position.Z = *fpCur++;
+								temp.Z = *fpCur++;
 							else
-								posKey->position.Z = baseFrame->vPositionXYZ.Z;
+								temp.Z = baseFrame->vPositionXYZ.Z;
+
+							convertVecToQuat(temp, rotKey->rotation);
 						}
-						
 					}
 				}
 			}
