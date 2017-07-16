@@ -19,7 +19,7 @@ namespace scene
 	CMD5MeshFileLoader::CMD5MeshFileLoader(scene::ISceneManager* smgr, io::IFileSystem* fs) : SceneManager(smgr), AnimatedMesh(NULL), FileSystem(fs)
 	{
 		#ifdef _DEBUG
-			setDebugName("CMS3DMeshFileLoader");
+			setDebugName("CMD5MeshFileLoader");
 		#endif
 
 		TextureLoader = new CMeshTextureLoader(FileSystem, SceneManager->getVideoDriver());
