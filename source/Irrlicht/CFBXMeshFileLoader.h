@@ -40,10 +40,48 @@ namespace scene
 
 		virtual IAnimatedMesh * createMesh(io::IReadFile *file) override;
 
+	protected:
+		void processNode(fbxsdk::FbxNode *pNode);
+
+		//加载几何网格
+		void processMesh(fbxsdk::FbxNode *pNode);
+
+		//加载骨骼
+		void processSkeleton(fbxsdk::FbxNode *pNode);
+
+		//加载灯光
+		void processLight(fbxsdk::FbxNode *pNode);
+
+		//加载相机
+		void processCamera();
+
+		//加载材质
+		void loadMaterial(fbxsdk::FbxMesh *pMesh);
+
+		//加载材质属性
+		void loadMaterialAttribute(fbxsdk::FbxSurfaceMaterial *pMaterial);
+
+		//加载纹理信息
+		void loadMaterialTexture(fbxsdk::FbxSurfaceMaterial *pMaterial);
+
+		//读取顶点
+		void readVertex(fbxsdk::FbxMesh *pMesh, int vIndex);
+
+		//读取颜色信息
+		void readColor(fbxsdk::FbxMesh *pMesh, int vIndex, int cIndex);
+
+		//读取uv
+		void readUV(fbxsdk::FbxMesh* pMesh, int vIndex, int uvIndex, int uvLayer);
+
+		//读取normal
+		void readNormal(fbxsdk::FbxMesh *pMesh, int vIndex, int cIndex);
+
+		//读取Tangent
+		void readTangent(fbxsdk::FbxMesh *pMesh, int vIndex, int cIndex);
+
 	private:
 		fbxsdk::FbxScene *m_fbxScene;
 		fbxsdk::FbxManager *m_fbxManager;
-		//fbxsdk::FBXTransformer m_fbxTransform;
 	};
 }
 }
