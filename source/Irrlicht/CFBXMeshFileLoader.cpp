@@ -166,22 +166,94 @@ namespace scene
 	{
 	}
 
-	void CFBXMeshFileLoader::loadMaterial(fbxsdk::FbxMesh * pMesh)
+	void CFBXMeshFileLoader::loadMaterial()
 	{
-		if (!pMesh || !pMesh->GetNode())
+		for (int i = 0; i < m_fbxScene->GetMaterialCount(); ++i)
 		{
-			return;
+			auto *pMaterial = m_fbxScene->GetMaterial(i);
+			MaterialData matData;
+			matData.mName = pMaterial->GetName();
+
+			f32 fTransparency = 1.0f;
+
+			FbxProperty emissiveProperty = pMaterial->FindProperty(FbxSurfaceMaterial::sEmissive);
+			FbxProperty diffuseProperty = pMaterial->FindProperty(FbxSurfaceMaterial::sDiffuse);
+			FbxProperty specularProperty = pMaterial->FindProperty(FbxSurfaceMaterial::sSpecular);
+			FbxProperty ambientProperty = pMaterial->FindProperty(FbxSurfaceMaterial::sAmbient);
+			FbxProperty speularFactorProperty = pMaterial->FindProperty(FbxSurfaceMaterial::sSpecularFactor);
+			FbxProperty shinessProperty = pMaterial->FindProperty(FbxSurfaceMaterial::sShininess);
+			FbxProperty normalMapProperty = pMaterial->FindProperty(FbxSurfaceMaterial::sNormalMap);
+			FbxProperty tansparentFactorProperty = pMaterial->FindProperty(FbxSurfaceMaterial::sTransparencyFactor);
+
+			FbxSurfaceLambert *lambert = FbxCast<FbxSurfaceLambert>(pMaterial);
+			if (lambert)
+			{
+				matData.mAmbient = readMaterialColor(lambert->Ambient, lambert->AmbientFactor);
+				matData.mDiffuse = readMaterialColor(lambert->Diffuse, lambert->DiffuseFactor);
+				matData.mEmissive = readMaterialColor(lambert->Emissive, lambert->EmissiveFactor);
+				if (lambert->TransparencyFactor.IsValid())
+				{
+					fTransparency = lambert->TransparencyFactor.Get();
+				}
+			}
+
+			FbxSurfacePhong *phong = FbxCast<FbxSurfacePhong>(pMaterial);
+			if (phong)
+			{
+				if (phong->Specular.IsValid())
+				{
+					//matData.mSpecular = readMaterialColor(phong->Specular, phong->SpecularFactor);
+					matData.mSpecular.X = phong->Specular[0];
+					matData.mSpecular.Y = phong->Specular[1];
+					matData.mSpecular.Z = phong->Specular[2];
+				}
+
+				if (phong->Shininess.IsValid())
+				{
+					matData.mPower = phong->Shininess.Get();
+				}
+			}
+
+			//Œ∆¿Ì
+			for (int textureLayerIndex = 0; textureLayerIndex < FbxLayerElement::sTypeTextureCount; ++textureLayerIndex)
+			{
+				FbxProperty textureProperty = pMaterial->FindProperty(FbxLayerElement::sTextureChannelNames[textureLayerIndex]);
+				if (textureProperty.IsValid())
+				{
+					int textureCount = textureProperty.GetSrcObjectCount(FbxTexture::ClassId);
+					for (int tex = 0; tex < textureCount; ++tex)
+					{
+						auto *pTex = FbxCast<FbxTexture>(textureProperty.GetSrcObject(tex));
+						if (pTex)
+						{
+							FbxFileTexture *pFileTex = FbxCast<FbxFileTexture>(pTex);
+							core::stringc filepath = pFileTex->GetFileName();
+							matData.mTextures[FbxLayerElement::sTextureChannelNames[textureLayerIndex]] = filepath;
+						}
+					}
+				}
+			}
+
+			m_materials.push_back(std::move(matData));
+		}
+	}
+
+	core::vector3df CFBXMeshFileLoader::readMaterialColor(fbxsdk::FbxPropertyT<FbxDouble3> colorProperty, fbxsdk::FbxPropertyT<FbxDouble> colorFactorProperty)
+	{
+		core::vector3df color;
+		if (colorProperty.IsValid())
+		{
+			color.X = colorProperty.Get()[0];
+			color.Y = colorProperty.Get()[1];
+			color.Z = colorProperty.Get()[2];
 		}
 
-		auto *pNode = pMesh->GetNode();
-		int materialCount = pNode->GetMaterialCount();
-		if (materialCount > 0)
+		if (colorFactorProperty.IsValid())
 		{
-			for (int materialIndex = 0; materialIndex < materialCount; ++materialIndex)
-			{
-				FbxSurfaceMaterial *pMaterial = pNode->GetMaterial(materialIndex);
-			}
+			color *= colorFactorProperty.Get();
 		}
+
+		return color;
 	}
 
 	void CFBXMeshFileLoader::loadMaterialAttribute(FbxSurfaceMaterial * pMaterial)

@@ -1,6 +1,8 @@
 #ifndef __C_FBX_MESH_FILE_LOADER_H_INCLUDE__
 #define __C_FBX_MESH_FILE_LOADER_H_INCLUDE__
 
+#include <unordered_map>
+
 #include <fbxsdk.h>
 
 #include "IMeshLoader.h"
@@ -29,6 +31,21 @@ namespace scene
 	
 	class CSkinnedMesh;
 
+	//材质信息
+	struct MaterialData
+	{
+		core::stringc mName;
+		core::vector3df mAmbient;
+		core::vector3df mDiffuse;
+		core::vector3df mSpecular;
+		core::vector3df mEmissive;
+		float mPower;
+		
+		std::unordered_map<core::stringc, core::stringc> mTextures;
+	};
+
+	typedef core::array<MaterialData> MaterialList;
+
 	class CFBXMeshFileLoader : public IMeshLoader
 	{
 	public:
@@ -56,7 +73,12 @@ namespace scene
 		void processCamera();
 
 		//加载材质
-		void loadMaterial(fbxsdk::FbxMesh *pMesh);
+		void loadMaterial();
+
+		//
+		core::vector3df readMaterialColor(fbxsdk::FbxPropertyT<FbxDouble3> colorProperty, fbxsdk::FbxPropertyT<FbxDouble> colorFactorProperty);
+
+
 
 		//加载材质属性
 		void loadMaterialAttribute(fbxsdk::FbxSurfaceMaterial *pMaterial);
@@ -82,6 +104,8 @@ namespace scene
 	private:
 		fbxsdk::FbxScene *m_fbxScene;
 		fbxsdk::FbxManager *m_fbxManager;
+
+		MaterialList m_materials;
 	};
 }
 }
