@@ -110,24 +110,29 @@ namespace scene
 		//m_fbxTransform.in
 	}
 
-	void CFBXMeshFileLoader::processNode(FbxNode * pNode)
+	void CFBXMeshFileLoader::CollectSceneNodes(FbxNode * pNode)
 	{
+        if (!pNode)
+        {
+            return;
+        }
+
 		auto *attribute = pNode->GetNodeAttribute();
 		if (attribute)
 		{
 			switch (attribute->GetAttributeType())
 			{
 			case FbxNodeAttribute::eMesh:
-				processMesh(pNode);
+                m_fbxMeshNodes.insert(pNode);
 				break;
-			case FbxNodeAttribute::eNone:
-				processNode(pNode);
+			case FbxNodeAttribute::eLight:
+                m_fbxLightNodes.insert(pNode);
 				break;
 			case FbxNodeAttribute::eSkeleton:
-				processSkeleton(pNode);
+                m_fbxBoneNodes[pNode] = false;
 				break;
 			case FbxNodeAttribute::eCamera:
-				processCamera();
+                m_fbxCameraNodes.insert(pNode);
 				break;
 			default:
 				break;
@@ -136,9 +141,47 @@ namespace scene
 
 		for (u32 i = 0; i < pNode->GetChildCount(); ++i)
 		{
-			processNode(pNode->GetChild(i));
+            CollectSceneNodes(pNode->GetChild(i));
 		}
 	}
+
+    void CFBXMeshFileLoader::ComputeSkeletonBindPose(FbxNode * pNode)
+    {
+        if (pNode || pNode->GetMesh())
+        {
+            return;
+        }
+
+        FbxMesh *pMesh = pNode->GetMesh();
+        for (int i = 0; i < pMesh->GetDeformerCount(); ++i)
+        {
+            FbxDeformer *deformer = pMesh->GetDeformer(i);
+            if (!deformer)
+            {
+                continue;
+            }
+
+            if (deformer->GetDeformerType() == FbxDeformer::eSkin)
+            {
+                FbxSkin *skin = FbxCast<FbxSkin>(deformer);
+                if (!skin)
+                {
+                    continue;
+                }
+
+                for (int j = 0; j < skin->GetClusterCount(); ++j)
+                {
+                    FbxCluster *cluster = skin->GetCluster(j);
+                    if (!cluster)
+                    {
+                        continue;
+                    }
+
+                    //TODO
+                }
+            }
+        }
+    }
 
 	void CFBXMeshFileLoader::processMesh(FbxNode * pNode)
 	{

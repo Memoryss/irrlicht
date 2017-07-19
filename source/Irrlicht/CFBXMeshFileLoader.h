@@ -2,6 +2,7 @@
 #define __C_FBX_MESH_FILE_LOADER_H_INCLUDE__
 
 #include <unordered_map>
+#include <unordered_set>
 
 #include <fbxsdk.h>
 
@@ -58,7 +59,10 @@ namespace scene
 		virtual IAnimatedMesh * createMesh(io::IReadFile *file) override;
 
 	protected:
-		void processNode(fbxsdk::FbxNode *pNode);
+		void CollectSceneNodes(fbxsdk::FbxNode *pNode);
+
+        //绑定骨骼
+        void ComputeSkeletonBindPose(fbxsdk::FbxNode *pNode);
 
 		//加载几何网格
 		void processMesh(fbxsdk::FbxNode *pNode);
@@ -106,6 +110,14 @@ namespace scene
 		fbxsdk::FbxManager *m_fbxManager;
 
 		MaterialList m_materials;
+
+        std::unordered_set<fbxsdk::FbxNode*> m_fbxCameraNodes;
+        std::unordered_set<fbxsdk::FbxNode*> m_fbxLightNodes;
+        std::unordered_set<fbxsdk::FbxNode*> m_fbxMeshNodes;
+
+        std::unordered_map<fbxsdk::FbxNode*, bool> m_fbxBoneNodes;
+        std::unordered_map<fbxsdk::FbxNode*, fbxsdk::FbxAMatrix> m_boneBindPose;
+        //std::unordered_map<fbxsdk::FbxMesh*, >
 	};
 }
 }
