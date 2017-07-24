@@ -1351,7 +1351,6 @@
     <ClInclude Include="CMD5MeshFileLoader.h">
       <Filter>Irrlicht\scene\loaders</Filter>
     </ClInclude>
-    <ClInclude Include="CFBXMeshFileLoader.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\changes.txt">
@@ -2292,7 +2291,6 @@
     <ClCompile Include="CMD5MeshFileLoader.cpp">
       <Filter>Irrlicht\scene\loaders</Filter>
     </ClCompile>
-    <ClCompile Include="CFBXMeshFileLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Irrlicht.rc" />
