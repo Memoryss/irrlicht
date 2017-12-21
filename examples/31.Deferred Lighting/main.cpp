@@ -24,6 +24,7 @@ int main()
 	gui::IGUIEnvironment *gui = device->getGUIEnvironment();
 
 	const io::path mediaPath = getExampleMediaPath();
+	smgr->getParameters()->setAttribute(scene::OBJ_TEXTURE_PATH, mediaPath.c_str());
 
 	//添加天空盒
 	auto *skyBox = smgr->addSkyBoxSceneNode(
@@ -45,7 +46,7 @@ int main()
 	}
 	
 	//添加灯光
-	auto *light = smgr->addLightSceneNode(0, core::vector3df(115, 5, -105),
+	auto *light = smgr->addLightSceneNode(0, core::vector3df(-115, 0, 0),
 		video::SColorf(1.0f, 1.0f, 1.0f));
 	light->setRadius(100000);
 
